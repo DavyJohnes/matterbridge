@@ -238,6 +238,7 @@ func (b *Bslack) handleMessageEvent(ev *slackevents.MessageEvent) (*config.Messa
 	return rmsg, nil
 }
 
+// TODO: implement file deletion handle when slack-go library will expose this event
 func (b *Bslack) handleFileDeletedEvent(ev *slack.FileDeletedEvent) (*config.Message, error) {
 	if rawChannel, ok := b.cache.Get(cfileDownloadChannel + ev.FileID); ok {
 		channel, err := b.channels.getChannelByID(rawChannel.(string))
