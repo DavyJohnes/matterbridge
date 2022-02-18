@@ -29,7 +29,8 @@ func (b *Bslack) handleSlack() {
 	b.Log.Debug("Start listening for Slack messages")
 	for message := range messages {
 		// don't do any action on deleted/typing messages
-		if message.Event != config.EventUserTyping && message.Event != config.EventMsgDelete {
+		if message.Event != config.EventUserTyping && message.Event != config.EventMsgDelete &&
+			message.Event != config.EventFileDelete {
 			b.Log.Debugf("<= Sending message from %s on %s to gateway", message.Username, b.Account)
 			// cleanup the message
 			message.Text = b.replaceMention(message.Text)
@@ -237,6 +238,26 @@ func (b *Bslack) handleMessageEvent(ev *slackevents.MessageEvent) (*config.Messa
 	return rmsg, nil
 }
 
+func (b *Bslack) handleFileDeletedEvent(ev *slack.FileDeletedEvent) (*config.Message, error) {
+	if rawChannel, ok := b.cache.Get(cfileDownloadChannel + ev.FileID); ok {
+		channel, err := b.channels.getChannelByID(rawChannel.(string))
+		if err != nil {
+			return nil, err
+		}
+
+		return &config.Message{
+			Event:    config.EventFileDelete,
+			Text:     config.EventFileDelete,
+			Channel:  channel.Name,
+			Account:  b.Account,
+			ID:       ev.FileID,
+			Protocol: b.Protocol,
+		}, nil
+	}
+
+	return nil, fmt.Errorf("channel ID for file ID %s not found", ev.FileID)
+}
+
 func (b *Bslack) handleStatusEvent(ev *slackevents.MessageEvent, rmsg *config.Message) bool {
 	switch ev.SubType {
 	case sChannelJoined, sMemberJoined:
@@ -296,6 +317,8 @@ func (b *Bslack) handleAttachments(ev *slackevents.MessageEvent, rmsg *config.Me
 
 	// If we have files attached, download them (in memory) and put a pointer to it in msg.Extra.
 	for i := range ev.Files {
+		// keep reference in cache on which channel we added this file
+		b.cache.Add(cfileDownloadChannel+ev.Files[i].ID, ev.Channel)
 		if err := b.handleDownloadFile(rmsg, &ev.Files[i], false); err != nil {
 			b.Log.Errorf("Could not download incoming file: %#v", err)
 		}
@@ -330,7 +353,7 @@ func (b *Bslack) handleDownloadFile(rmsg *config.Message, file *slackevents.File
 	// that the comment is not duplicated.
 	comment := rmsg.Text
 	rmsg.Text = ""
-	helper.HandleDownloadData(b.Log, rmsg, file.Name, comment, file.URLPrivateDownload, data, b.General)
+	helper.HandleDownloadData2(b.Log, rmsg, file.Name, file.ID, comment, file.URLPrivateDownload, data, b.General)
 	return nil
 }
 

@@ -24,6 +24,13 @@ Password=""
 #OPTIONAL (default false)
 UseTLS=false
 
+#Use client certificate - see CertFP https://libera.chat/guides/certfp.html
+#Specify filename which contains private key and cert
+#OPTIONAL (default "")
+#
+#TLSClientCertificate="cert.pem"
+TLSClientCertificate=""
+
 #Enable SASL (PLAIN) authentication. (libera requires this from eg AWS hosts)
 #It uses NickServNick and NickServPassword as login and password
 #OPTIONAL (default false)
@@ -400,6 +407,10 @@ SkipTLSVerify=true
 
 ## RELOADABLE SETTINGS
 ## Settings below can be reloaded by editing the file
+
+# UseUserName shows the username instead of the server nickname
+# OPTIONAL (default false)
+UseUserName=false
 
 #how to format the list of IRC nicks when displayed in mattermost.
 #Possible options are "table" and "plain"
@@ -1886,7 +1897,8 @@ enable=true
     # -------------------------------------------------------------------------------------------------------------------------------------
     #    irc     |      channel       |            #general           | The # symbol is required and should be lowercase!
     # -------------------------------------------------------------------------------------------------------------------------------------
-    # mattermost |      channel       |            general            | This is the channel name as seen in the URL, not the display name
+    #            |      channel       |            general            | This is the channel name as seen in the URL, not the display name
+    # mattermost |    channel id      | ID:oc4wifyuojgw5f3nsuweesmz8w | This is the channel ID (only use if you know what you're doing)
     # -------------------------------------------------------------------------------------------------------------------------------------
     #   matrix   | #channel:server    |    #yourchannel:matrix.org    | Encrypted rooms are not supported in matrix
     # -------------------------------------------------------------------------------------------------------------------------------------

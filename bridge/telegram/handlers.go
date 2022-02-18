@@ -1,6 +1,7 @@
 package btelegram
 
 import (
+	"fmt"
 	"html"
 	"path/filepath"
 	"strconv"
@@ -9,14 +10,27 @@ import (
 
 	"github.com/42wim/matterbridge/bridge/config"
 	"github.com/42wim/matterbridge/bridge/helper"
+	"github.com/davecgh/go-spew/spew"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 func (b *Btelegram) handleUpdate(rmsg *config.Message, message, posted, edited *tgbotapi.Message) *tgbotapi.Message {
 	// handle channels
 	if posted != nil {
-		message = posted
-		rmsg.Text = message.Text
+		if posted.Text == "/chatId" {
+			chatID := strconv.FormatInt(posted.Chat.ID, 10)
+
+			_, err := b.Send(config.Message{
+				Channel: chatID,
+				Text:    fmt.Sprintf("ID of this chat: %s", chatID),
+			})
+			if err != nil {
+				b.Log.Warnf("Unable to send chatID to %s", chatID)
+			}
+		} else {
+			message = posted
+			rmsg.Text = message.Text
+		}
 	}
 
 	// edited channel message
@@ -110,6 +124,25 @@ func (b *Btelegram) handleUsername(rmsg *config.Message, message *tgbotapi.Messa
 		}
 	}
 
+	if message.SenderChat != nil { //nolint:nestif
+		rmsg.UserID = strconv.FormatInt(message.SenderChat.ID, 10)
+		if b.GetBool("UseFirstName") {
+			rmsg.Username = message.SenderChat.FirstName
+		}
+
+		if rmsg.Username == "" || rmsg.Username == "Channel_Bot" {
+			rmsg.Username = message.SenderChat.UserName
+
+			if rmsg.Username == "" || rmsg.Username == "Channel_Bot" {
+				rmsg.Username = message.SenderChat.FirstName
+			}
+		}
+		// only download avatars if we have a place to upload them (configured mediaserver)
+		if b.General.MediaServerUpload != "" || (b.General.MediaServerDownload != "" && b.General.MediaDownloadPath != "") {
+			b.handleDownloadAvatar(message.SenderChat.ID, rmsg.Channel)
+		}
+	}
+
 	// if we really didn't find a username, set it to unknown
 	if rmsg.Username == "" {
 		rmsg.Username = unknownUser
@@ -124,6 +157,10 @@ func (b *Btelegram) handleRecv(updates <-chan tgbotapi.Update) {
 			update.EditedMessage == nil && update.EditedChannelPost == nil {
 			b.Log.Error("Getting nil messages, this shouldn't happen.")
 			continue
+		}
+
+		if b.GetInt("debuglevel") == 1 {
+			spew.Dump(update.Message)
 		}
 
 		var message *tgbotapi.Message

@@ -51,8 +51,9 @@ const (
 	sChannelPurpose  = "channel_purpose"
 	sFileComment     = "file_comment"
 	sMeMessage       = "me_message"
-	sSystemUser      = "system"
-	sSlackBotUser    = "slackbot"
+	sSystemUser          = "system"
+	sSlackBotUser        = "slackbot"
+	cfileDownloadChannel = "file_download_channel"
 
 	tokenConfig           = "Token"
 	appTokenConfig        = "AppToken"
