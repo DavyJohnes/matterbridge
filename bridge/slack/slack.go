@@ -25,7 +25,7 @@ type Bslack struct {
 	mh  *matterhook.Client
 	sc  *slack.Client
 	rtm *slack.RTM
-	si  *slack.Bot
+	si  *slack.User
 	smc *socketmode.Client
 
 	cache        *lru.Cache

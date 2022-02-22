@@ -54,8 +54,8 @@ func (b *Bslack) handleSlackClient(messages chan *config.Message) {
 		switch msg.Type {
 		case socketmode.EventTypeConnected:
 			if authTest, authErr := b.smc.AuthTest(); authErr == nil {
-				if botInfo, infoErr := b.smc.GetBotInfo(authTest.BotID); infoErr == nil {
-					b.si = botInfo
+				if botUserInfo, botUserInfoError := b.smc.GetUserInfo(authTest.UserID); botUserInfoError == nil {
+					b.si = botUserInfo
 
 					b.channels.populateChannels(true)
 					b.users.populateUsers(true)
@@ -104,7 +104,7 @@ func (b *Bslack) handleSlackClient(messages chan *config.Message) {
 				}
 				messages <- rmsg
 			case *slackevents.MemberJoinedChannelEvent:
-				if innerEventData.User == b.si.UserID {
+				if innerEventData.User == b.si.ID {
 					channel, err := b.smc.GetConversationInfo(innerEventData.Channel, false)
 
 					if err != nil {
