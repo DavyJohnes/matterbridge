@@ -138,4 +138,6 @@ require (
 
 replace github.com/matrix-org/gomatrix => github.com/matterbridge/gomatrix v0.0.0-20220205235239-607eb9ee6419
 
+replace github.com/slack-go/slack v0.10.2 => github.com/DavyJohnes/slack v0.10.3-0.20220222172050-d9e0bde1022c
+
 go 1.17

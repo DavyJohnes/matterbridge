@@ -286,45 +286,55 @@ func (b *channels) populateChannels(wait bool) {
 	newChannelsByName := map[string]*slack.Channel{}
 	newChannelMembers := make(map[string][]string)
 
-	// We only retrieve public and private channels, not IMs
-	// and MPIMs as those do not have a channel name.
-	queryParams := &slack.GetConversationsParameters{
-		ExcludeArchived: true,
-		Types:           []string{"public_channel,private_channel"},
-		Limit:           1000,
+	teams, teamsErr := b.sc.GetAuthTeams()
+
+	if teamsErr != nil {
+		b.log.Fatalf("Unable to get bot's teams")
 	}
-	for {
-		channels, nextCursor, err := b.sc.GetConversations(queryParams)
-		if err != nil {
-			if err = handleRateLimit(b.log, err); err != nil {
-				b.log.Errorf("Could not retrieve channels: %#v", err)
-				return
-			}
-			continue
+
+	for _, teamInfo := range teams {
+		// We only retrieve public and private channels, not IMs
+		// and MPIMs as those do not have a channel name.
+		queryParams := &slack.GetConversationsParameters{
+			TeamID:          teamInfo.ID,
+			ExcludeArchived: true,
+			Types:           []string{"public_channel,private_channel"},
+			Limit:           1000,
 		}
 
-		for i := range channels {
-			newChannelsByID[channels[i].ID] = &channels[i]
-			newChannelsByName[channels[i].Name] = &channels[i]
-			// also find all the members in every channel
-			// comment for now, issues on big slacks
-			/*
-				members, err := b.getUsersInConversation(channels[i].ID)
-				if err != nil {
-					if err = b.handleRateLimit(err); err != nil {
-						b.Log.Errorf("Could not retrieve channel members: %#v", err)
-						return
-					}
-					continue
+		for {
+			channels, nextCursor, err := b.sc.GetConversations(queryParams)
+			if err != nil {
+				if err = handleRateLimit(b.log, err); err != nil {
+					b.log.Errorf("Could not retrieve channels: %#v", err)
+					return
 				}
-				newChannelMembers[channels[i].ID] = members
-			*/
-		}
+				continue
+			}
 
-		if nextCursor == "" {
-			break
+			for i := range channels {
+				newChannelsByID[channels[i].ID] = &channels[i]
+				newChannelsByName[channels[i].Name] = &channels[i]
+				// also find all the members in every channel
+				// comment for now, issues on big slacks
+				/*
+					members, err := b.getUsersInConversation(channels[i].ID)
+					if err != nil {
+						if err = b.handleRateLimit(err); err != nil {
+							b.Log.Errorf("Could not retrieve channel members: %#v", err)
+							return
+						}
+						continue
+					}
+					newChannelMembers[channels[i].ID] = members
+				*/
+			}
+
+			if nextCursor == "" {
+				break
+			}
+			queryParams.Cursor = nextCursor
 		}
-		queryParams.Cursor = nextCursor
 	}
 
 	b.channelsMutex.Lock()
