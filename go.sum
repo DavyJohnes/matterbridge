@@ -108,6 +108,8 @@ github.com/CloudyKit/jet/v3 v3.0.0/go.mod h1:HKQPgSJmdK8hdoAbKUUWajkHyHo4RaU5rMd
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 github.com/DavyJohnes/slack v0.10.3-0.20220222172050-d9e0bde1022c h1:K/UGD/UZ/JRkOTVk+R3Fn1M+o/IFDzLiAxIqgKzoNGU=
 github.com/DavyJohnes/slack v0.10.3-0.20220222172050-d9e0bde1022c/go.mod h1:5FLdBRv7VW/d9EBxx/eEktOptWygbA9K2QK/KW7ds1s=
+github.com/DavyJohnes/slack v0.10.3-0.20220224083728-5f02d4f8d869 h1:AVwuiDjQdhZik8vLKdsgvpzinnc47ZLFMW5+FhQUeYo=
+github.com/DavyJohnes/slack v0.10.3-0.20220224083728-5f02d4f8d869/go.mod h1:5FLdBRv7VW/d9EBxx/eEktOptWygbA9K2QK/KW7ds1s=
 github.com/HdrHistogram/hdrhistogram-go v0.9.0/go.mod h1:nxrse8/Tzg2tg3DZcZjm6qEclQKK70g0KxO61gFFZD4=
 github.com/JalfResi/justext v0.0.0-20170829062021-c0282dea7198/go.mod h1:0SURuH1rsE8aVWvutuMZghRNrNrYEUzibzJfhEYR8L0=
 github.com/Jeffail/gabs v1.4.0 h1://5fYRRTq1edjfIrQGvdkcd22pkYUrHZ5YC/H2GJVAo=

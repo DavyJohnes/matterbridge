@@ -136,33 +136,42 @@ func (b *users) populateUsers(wait bool) {
 	b.refreshMutex.Unlock()
 
 	newUsers := map[string]*slack.User{}
-	pagination := b.sc.GetUsersPaginated(slack.GetUsersOptionLimit(200))
-	count := 0
-	for {
-		var err error
-		pagination, err = pagination.Next(context.Background())
-		time.Sleep(time.Second)
-		if err != nil {
-			if pagination.Done(err) {
+
+	teams, teamsErr := b.sc.GetAuthTeams()
+
+	if teamsErr != nil {
+		b.log.Fatalf("Unable to get bot's teams")
+	}
+
+	for _, team := range teams {
+		pagination := b.sc.GetUsersPaginated(slack.GetUsersOptionLimit(200), slack.GetUsersOptionTeamID(team.ID))
+		count := 0
+		for {
+			var err error
+			pagination, err = pagination.Next(context.Background())
+			time.Sleep(time.Second)
+			if err != nil {
+				if pagination.Done(err) {
+					break
+				}
+
+				if err = handleRateLimit(b.log, err); err != nil {
+					b.log.Errorf("Could not retrieve users: %#v", err)
+					return
+				}
+				continue
+			}
+
+			for i := range pagination.Users {
+				newUsers[pagination.Users[i].ID] = &pagination.Users[i]
+			}
+			b.log.Debugf("getting %d users", len(pagination.Users))
+			count++
+			// more > 2000 users, slack will complain and ratelimit. break
+			if count > 10 {
+				b.log.Info("Large slack detected > 2000 users, skipping loading complete userlist.")
 				break
 			}
-
-			if err = handleRateLimit(b.log, err); err != nil {
-				b.log.Errorf("Could not retrieve users: %#v", err)
-				return
-			}
-			continue
-		}
-
-		for i := range pagination.Users {
-			newUsers[pagination.Users[i].ID] = &pagination.Users[i]
-		}
-		b.log.Debugf("getting %d users", len(pagination.Users))
-		count++
-		// more > 2000 users, slack will complain and ratelimit. break
-		if count > 10 {
-			b.log.Info("Large slack detected > 2000 users, skipping loading complete userlist.")
-			break
 		}
 	}
 
