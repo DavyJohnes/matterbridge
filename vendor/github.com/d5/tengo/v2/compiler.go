@@ -692,12 +692,15 @@ func (c *Compiler) compileAssign(
 		return c.errorf(node, "operator ':=' not allowed with selector")
 	}
 
+	_, isFunc := rhs[0].(*parser.FuncLit)
 	symbol, depth, exists := c.symbolTable.Resolve(ident, false)
 	if op == token.Define {
 		if depth == 0 && exists {
 			return c.errorf(node, "'%s' redeclared in this block", ident)
 		}
-		symbol = c.symbolTable.Define(ident)
+		if isFunc {
+			symbol = c.symbolTable.Define(ident)
+		}
 	} else {
 		if !exists {
 			return c.errorf(node, "unresolved reference '%s'", ident)
@@ -716,6 +719,10 @@ func (c *Compiler) compileAssign(
 		if err := c.Compile(expr); err != nil {
 			return err
 		}
+	}
+
+	if op == token.Define && !isFunc {
+		symbol = c.symbolTable.Define(ident)
 	}
 
 	switch op {
@@ -1220,14 +1227,14 @@ func (c *Compiler) optimizeFunc(node parser.Node) {
 	iterateInstructions(c.scopes[c.scopeIndex].Instructions,
 		func(pos int, opcode parser.Opcode, operands []int) bool {
 			switch {
+			case dsts[pos]:
+				dstIdx++
+				deadCode = false
 			case opcode == parser.OpReturn:
 				if deadCode {
 					return true
 				}
 				deadCode = true
-			case dsts[pos]:
-				dstIdx++
-				deadCode = false
 			case deadCode:
 				return true
 			}
@@ -1242,6 +1249,7 @@ func (c *Compiler) optimizeFunc(node parser.Node) {
 	var appendReturn bool
 	endPos := len(c.scopes[c.scopeIndex].Instructions)
 	newEndPost := len(newInsts)
+
 	iterateInstructions(newInsts,
 		func(pos int, opcode parser.Opcode, operands []int) bool {
 			switch opcode {
