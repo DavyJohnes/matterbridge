@@ -97,7 +97,7 @@ type VideoGetResponse struct {
 
 // VideoGet returns detailed information about videos.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/video.get
 func (vk *VK) VideoGet(params Params) (response VideoGetResponse, err error) {
@@ -115,7 +115,7 @@ type VideoGetExtendedResponse struct {
 
 // VideoGetExtended returns detailed information about videos.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/video.get
 func (vk *VK) VideoGetExtended(params Params) (response VideoGetExtendedResponse, err error) {
@@ -143,7 +143,7 @@ type VideoGetAlbumsResponse struct {
 
 // VideoGetAlbums returns a list of video albums owned by a user or community.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/video.getAlbums
 func (vk *VK) VideoGetAlbums(params Params) (response VideoGetAlbumsResponse, err error) {
@@ -160,7 +160,7 @@ type VideoGetAlbumsExtendedResponse struct {
 
 // VideoGetAlbumsExtended returns a list of video albums owned by a user or community.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/video.getAlbums
 func (vk *VK) VideoGetAlbumsExtended(params Params) (response VideoGetAlbumsExtendedResponse, err error) {
@@ -174,7 +174,7 @@ type VideoGetAlbumsByVideoResponse []int
 
 // VideoGetAlbumsByVideo returns a list of albums in which the video is located.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/video.getAlbumsByVideo
 func (vk *VK) VideoGetAlbumsByVideo(params Params) (response VideoGetAlbumsByVideoResponse, err error) {
@@ -191,7 +191,7 @@ type VideoGetAlbumsByVideoExtendedResponse struct {
 
 // VideoGetAlbumsByVideoExtended returns a list of albums in which the video is located.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/video.getAlbumsByVideo
 func (vk *VK) VideoGetAlbumsByVideoExtended(params Params) (response VideoGetAlbumsByVideoExtendedResponse, err error) {
@@ -208,7 +208,7 @@ type VideoGetCommentsResponse struct {
 
 // VideoGetComments returns a list of comments on a video.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/video.getComments
 func (vk *VK) VideoGetComments(params Params) (response VideoGetCommentsResponse, err error) {
@@ -226,12 +226,23 @@ type VideoGetCommentsExtendedResponse struct {
 
 // VideoGetCommentsExtended returns a list of comments on a video.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/video.getComments
 func (vk *VK) VideoGetCommentsExtended(params Params) (response VideoGetCommentsExtendedResponse, err error) {
 	err = vk.RequestUnmarshal("video.getComments", &response, params, Params{"extended": true})
 
+	return
+}
+
+// VideoLiveGetCategoriesResponse struct.
+type VideoLiveGetCategoriesResponse []object.VideoLiveCategory
+
+// VideoLiveGetCategories method.
+//
+// https://vk.com/dev/video.liveGetCategories
+func (vk *VK) VideoLiveGetCategories(params Params) (response VideoLiveGetCategoriesResponse, err error) {
+	err = vk.RequestUnmarshal("video.liveGetCategories", &response, params)
 	return
 }
 
@@ -310,7 +321,7 @@ type VideoSearchResponse struct {
 
 // VideoSearch returns a list of videos under the set search criterion.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/video.search
 func (vk *VK) VideoSearch(params Params) (response VideoSearchResponse, err error) {
@@ -328,11 +339,35 @@ type VideoSearchExtendedResponse struct {
 
 // VideoSearchExtended returns a list of videos under the set search criterion.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/video.search
 func (vk *VK) VideoSearchExtended(params Params) (response VideoSearchExtendedResponse, err error) {
 	err = vk.RequestUnmarshal("video.search", &response, params, Params{"extended": true})
 
+	return
+}
+
+// VideoStartStreamingResponse struct.
+type VideoStartStreamingResponse object.VideoLive
+
+// VideoStartStreaming method.
+//
+// https://vk.com/dev/video.startStreaming
+func (vk *VK) VideoStartStreaming(params Params) (response VideoStartStreamingResponse, err error) {
+	err = vk.RequestUnmarshal("video.startStreaming", &response, params)
+	return
+}
+
+// VideoStopStreamingResponse struct.
+type VideoStopStreamingResponse struct {
+	UniqueViewers int `json:"unique_viewers"`
+}
+
+// VideoStopStreaming method.
+//
+// https://vk.com/dev/video.stopStreaming
+func (vk *VK) VideoStopStreaming(params Params) (response VideoStopStreamingResponse, err error) {
+	err = vk.RequestUnmarshal("video.stopStreaming", &response, params)
 	return
 }

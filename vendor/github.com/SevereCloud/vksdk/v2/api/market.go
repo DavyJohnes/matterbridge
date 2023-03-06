@@ -20,6 +20,7 @@ func (vk *VK) MarketAdd(params Params) (response MarketAddResponse, err error) {
 // MarketAddAlbumResponse struct.
 type MarketAddAlbumResponse struct {
 	MarketAlbumID int `json:"market_album_id"` // Album ID
+	AlbumsCount   int `json:"albums_count"`
 }
 
 // MarketAddAlbum creates new collection of items.
@@ -180,7 +181,7 @@ type MarketGetCommentsResponse struct {
 
 // MarketGetComments returns comments list for an item.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/market.getComments
 func (vk *VK) MarketGetComments(params Params) (response MarketGetCommentsResponse, err error) {
@@ -198,7 +199,7 @@ type MarketGetCommentsExtendedResponse struct {
 
 // MarketGetCommentsExtended returns comments list for an item.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/market.getComments
 func (vk *VK) MarketGetCommentsExtended(params Params) (response MarketGetCommentsExtendedResponse, err error) {
