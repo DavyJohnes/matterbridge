@@ -1,9 +1,8 @@
 package api // import "github.com/SevereCloud/vksdk/v2/api"
 
 import (
-	"encoding/json"
-
 	"github.com/SevereCloud/vksdk/v2/object"
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 // UtilsCheckLinkResponse struct.
@@ -44,7 +43,7 @@ type UtilsGetLinkStatsResponse object.UtilsLinkStats
 
 // UtilsGetLinkStats returns stats data for shortened link.
 //
-// 	extended=0
+//	extended=0
 //
 // https://vk.com/dev/utils.getLinkStats
 func (vk *VK) UtilsGetLinkStats(params Params) (response UtilsGetLinkStatsResponse, err error) {
@@ -58,7 +57,7 @@ type UtilsGetLinkStatsExtendedResponse object.UtilsLinkStatsExtended
 
 // UtilsGetLinkStatsExtended returns stats data for shortened link.
 //
-// 	extended=1
+//	extended=1
 //
 // https://vk.com/dev/utils.getLinkStats
 func (vk *VK) UtilsGetLinkStatsExtended(params Params) (response UtilsGetLinkStatsExtendedResponse, err error) {
@@ -89,17 +88,34 @@ func (vk *VK) UtilsGetShortLink(params Params) (response UtilsGetShortLinkRespon
 // UtilsResolveScreenNameResponse struct.
 type UtilsResolveScreenNameResponse object.UtilsDomainResolved
 
+// UnmarshalJSON UtilsResolveScreenNameResponse.
+//
+// BUG(VK): UtilsResolveScreenNameResponse return [].
+func (resp *UtilsResolveScreenNameResponse) UnmarshalJSON(data []byte) error {
+	var p object.UtilsDomainResolved
+	err := p.UnmarshalJSON(data)
+
+	*resp = UtilsResolveScreenNameResponse(p)
+
+	return err
+}
+
+// DecodeMsgpack UtilsResolveScreenNameResponse.
+//
+// BUG(VK): UtilsResolveScreenNameResponse return [].
+func (resp *UtilsResolveScreenNameResponse) DecodeMsgpack(dec *msgpack.Decoder) error {
+	var p object.UtilsDomainResolved
+	err := p.DecodeMsgpack(dec)
+
+	*resp = UtilsResolveScreenNameResponse(p)
+
+	return err
+}
+
 // UtilsResolveScreenName detects a type of object (e.g., user, community, application) and its ID by screen name.
 //
 // https://vk.com/dev/utils.resolveScreenName
 func (vk *VK) UtilsResolveScreenName(params Params) (response UtilsResolveScreenNameResponse, err error) {
-	rawResponse, err := vk.Request("utils.resolveScreenName", params)
-	// Если короткое имя screen_name не занято, то будет возвращён пустой объект.
-	if err != nil || string(rawResponse) == "[]" {
-		return
-	}
-
-	err = json.Unmarshal(rawResponse, &response)
-
+	err = vk.RequestUnmarshal("utils.resolveScreenName", &response, params)
 	return
 }
